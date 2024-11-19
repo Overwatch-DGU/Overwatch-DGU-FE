@@ -68,7 +68,7 @@ const OverwatchScreen = () => {
 
   const handleLogin = (e) => {
     e.preventDefault(); // 기본 동작 방지
-    navigate('/dashboard'); // "/dashboard" 경로로 이동
+    navigate('/pick'); // "/dashboard" 경로로 이동
   };
   return (
     <Container>
