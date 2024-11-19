@@ -1,8 +1,8 @@
+// PickScreen.js (메인 화면)
 import React from "react";
 import styled from "styled-components";
 import BackgroundImage from "../assets/bg.png"; // 배경 이미지
 import TextLogo from "../assets/TextLogo.png";
-import ProfilePic from "../assets/profilecard.png"; // 프로필 사진
 import ProfileCard from "../components/Profilecard"; // 분리된 컴포넌트 임포트
 import { useNavigate } from "react-router-dom";
 
@@ -86,13 +86,8 @@ const Badge = styled.span`
 const PickScreen = () => {
   const navigate = useNavigate(); // 페이지 이동을 위한 React Router 훅
 
-  const handleStore = (e) => {
-    e.preventDefault();
-    navigate("/store");
-  };
-  const handleGift = (e) => {
-    e.preventDefault();
-    navigate("/gift");
+  const handleNavigation = (path) => {
+    navigate(path);
   };
 
   return (
@@ -104,14 +99,16 @@ const PickScreen = () => {
       <Overwatch src={TextLogo} alt="Overwatch Logo" />
 
       {/* 분리된 프로필 카드 */}
-      <ProfileCard username="짭버워치" profilePic={ProfilePic} />
+      <ProfileCard />
 
       {/* 메뉴 리스트 */}
       <MenuList>
-        <MenuItem onClick={handleStore}>
+        <MenuItem onClick={() => handleNavigation("/hero?type=shop")}>
           상 점<Badge>신규!</Badge>
         </MenuItem>
-        <MenuItem onClick={handleGift}>선물하기</MenuItem>
+        <MenuItem onClick={() => handleNavigation("/hero?type=gift")}>
+          선물하기
+        </MenuItem>
       </MenuList>
     </Container>
   );

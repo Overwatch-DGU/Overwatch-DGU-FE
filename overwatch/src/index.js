@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'; // React Router
 import Pick from './pages/Pick'
 import Store from './pages/Store'
 import Gift from './pages/Gift'
-
+import Hero from './pages/Hero'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
@@ -17,8 +17,9 @@ root.render(
         <Route path="/" element={<App />} />
         {/* 접속 버튼으로 이동할 경로 */}
         <Route path="/pick" element={<Pick />} />
-        <Route path="/store" element={<Store />} />
-        <Route path="/gift" element={<Gift />} />
+        <Route path="/store/:heroId" element={<Store />} />
+<Route path="/gift/:heroId" element={<Gift />} />
+        <Route path="/hero" element={<Hero />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

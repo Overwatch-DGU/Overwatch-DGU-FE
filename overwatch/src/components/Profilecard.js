@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import ProfilePic from "../assets/profilecard.png"; // 프로필 사진
 
 const Card = styled.div`
   position: absolute;
@@ -25,11 +26,11 @@ const Username = styled.span`
   color: black;
 `;
 
-const ProfileCard = ({ username, profilePic }) => {
+const ProfileCard = () => {
   return (
     <Card>
-      <ProfileImage src={profilePic} alt="프로필 사진" />
-      <Username>{username}</Username>
+      <ProfileImage src={ProfilePic} alt="프로필 사진" />
+      <Username>gg</Username>
     </Card>
   );
 };
