@@ -33,7 +33,25 @@ const TopLeftText = styled.div`
   padding: 10px 20px;
   font-family: GowunDodum-Regular;
 `;
+const ButtonWrapper = styled.div`
+  position: absolute;
+  top: 90px;
+  right: 30px;
+  display: flex;
+  justify-content: center;
+`;
 
+const Button = styled.button`
+  padding: 10px 20px;
+  background-color: #f77f00;
+  color: white;
+  border: none;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #e66d00;
+  }
+  `;
 const HeroesGrid = styled.div`
   display: flex;
   justify-content: center;
@@ -55,7 +73,7 @@ const HeroCard = styled.div`
   transition: transform 0.1s, background-color 0.6s;
 
   &:hover {
-    background-color: orange;
+    background-color: #f77f00;
     transform: scale(1.3) skewX(-14deg);
     z-index: 1;
   }
@@ -120,6 +138,12 @@ const HeroSelector = () => {
         {type === "gift" && <div>선물하기</div>}
       </TopLeftText>
       <ProfileCard />
+      {type === "gift" && (
+        <ButtonWrapper>
+          <Button onClick={() => alert("로그 및 통계 보기 클릭!")}>로그 및 통계</Button>
+        </ButtonWrapper>
+      )}
+      
       <HeroesGrid>
         {heroes.map((hero) => (
           <HeroCard key={hero.id} onClick={() => handleHeroClick(hero.id)}>
