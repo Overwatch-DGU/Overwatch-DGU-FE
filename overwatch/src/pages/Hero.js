@@ -24,7 +24,7 @@ const TopLeftText = styled.div`
   font-style: italic;
   top: 40px;
   left: 20px;
-  font-size: 90px;
+  font-size: 70px;
   font-weight: bold;
   color: transparent;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
@@ -131,6 +131,11 @@ const HeroSelector = () => {
     }
   };
 
+  const handelLogClick = (e) => {
+    e.preventDefault(); 
+    navigate('/log'); 
+  };
+
   return (
     <Container>
       <TopLeftText>
@@ -140,7 +145,7 @@ const HeroSelector = () => {
       <ProfileCard />
       {type === "gift" && (
         <ButtonWrapper>
-          <Button onClick={() => alert("로그 및 통계 보기 클릭!")}>로그 및 통계</Button>
+          <Button onClick={handelLogClick}>로그 및 통계</Button>
         </ButtonWrapper>
       )}
       

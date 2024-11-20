@@ -1,18 +1,23 @@
 import React from "react";
 import styled from "styled-components";
-import ProfilePic from "../assets/profilecard.png"; // 프로필 사진
+import { useCoin } from "../components/CoinContext"; // Context 사용
+import ProfilePic from "../assets/profilecard.png";
+import CoinImage from "../assets/coin.png";
 
-const Card = styled.div`
-  position: absolute;
+const Wrapper = styled.div`
+  position: fixed;
   top: 20px;
   right: 20px;
+`;
+
+const Card = styled.div`
   display: flex;
   align-items: center;
   width: 280px;
-  background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)); /* 그라데이션 */
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  z-index: 2;
-  margin-right: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
 `;
 
 const ProfileImage = styled.img`
@@ -24,14 +29,41 @@ const ProfileImage = styled.img`
 const Username = styled.span`
   font-size: 1rem;
   color: black;
+  font-weight: bold;
+`;
+
+const CoinInfo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 280px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+`;
+
+const CoinImageStyled = styled.img`
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
 `;
 
 const ProfileCard = () => {
+  const { coins } = useCoin(); // 현재 코인 상태 가져오기
+
   return (
-    <Card>
-      <ProfileImage src={ProfilePic} alt="프로필 사진" />
-      <Username>gg</Username>
-    </Card>
+    <Wrapper>
+      <Card>
+        <ProfileImage src={ProfilePic} alt="프로필 사진" />
+        <Username>사용자</Username>
+      </Card>
+      <CoinInfo>
+        <CoinImageStyled src={CoinImage} alt="코인 사진" />
+        {coins} Coins
+      </CoinInfo>
+    </Wrapper>
   );
 };
 

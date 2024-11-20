@@ -8,20 +8,23 @@ import Pick from './pages/Pick'
 import Store from './pages/Store'
 import Gift from './pages/Gift'
 import Hero from './pages/Hero'
+import Log from './pages/Log'
+import { CoinProvider } from "./components/CoinContext"; // CoinContext 추가
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-   <BrowserRouter>
+    <CoinProvider>
+   <BrowserRouter future={{ v7_relativeSplatPath: true }}>
       <Routes>
-        {/* 기본 경로 */}
         <Route path="/" element={<App />} />
-        {/* 접속 버튼으로 이동할 경로 */}
         <Route path="/pick" element={<Pick />} />
         <Route path="/store/:heroId" element={<Store />} />
-<Route path="/gift/:heroId" element={<Gift />} />
+        <Route path="/gift/:heroId" element={<Gift />} />
         <Route path="/hero" element={<Hero />} />
+        <Route path="/log" element={<Log/>}/>
       </Routes>
-    </BrowserRouter>
+    </BrowserRouter></CoinProvider>
   </React.StrictMode>
 );
 
