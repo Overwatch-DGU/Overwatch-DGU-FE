@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import axios from 'axios';
 import OWLogo from '../assets/Logo.png';
 import { useNavigate } from 'react-router-dom';
+import { useCoin } from '../components/CoinContext'; // CoinContext import
 
-// Styled Components
+// Styled Components (기존 코드 유지)
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -12,7 +14,7 @@ const Container = styled.div`
   height: 100vh;
   background-color: #92A1BB;
   font-family: 'Arial', sans-serif;
-  position: relative; 
+  position: relative;
 `;
 
 const Logo = styled.div`
@@ -30,7 +32,7 @@ const Form = styled.form`
   align-items: center;
   margin-top: 20px;
   gap: 15px;
-  transform: translate(-0%, -60%); 
+  transform: translate(-0%, -60%);
 `;
 
 const Input = styled.input`
@@ -55,7 +57,6 @@ const AccessButton = styled.button`
   }
 `;
 
-
 const Footer = styled.div`
   position: absolute;
   bottom: 20px;
@@ -64,24 +65,52 @@ const Footer = styled.div`
 `;
 
 const OverwatchScreen = () => {
-  const navigate = useNavigate(); // 페이지 이동을 위한 React Router 훅
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { setCoins, setUsername } = useCoin(); // setUsername 가져오기
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
-    e.preventDefault(); // 기본 동작 방지
-    navigate('/pick'); // "/dashboard" 경로로 이동
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:8080/api/users/login', {
+        email,
+        password,
+      });
+      console.log('로그인 성공:', response.data);
+
+      // 응답에서 username과 coin 값을 추출하고 CoinContext에 설정
+      const userCoins = response.data.coin;
+      const userUsername = response.data.username; // 응답에서 username 값 추출
+      setCoins(userCoins); // CoinContext의 coins 상태 업데이트
+      setUsername(userUsername); // CoinContext의 username 상태 업데이트
+
+      navigate('/pick');
+    } catch (error) {
+      console.error('로그인 실패:', error.response ? error.response.data : error.message);
+      alert('로그인 실패. 다시 시도해주세요.');
+    }
   };
+
   return (
     <Container>
       <Logo>
-        <LogoImage
-          src={OWLogo}
-          alt="Overwatch Logo"
-        />
+        <LogoImage src={OWLogo} alt="Overwatch Logo" />
       </Logo>
-      <Form>
-        <Input type="email" placeholder="이메일 주소" required />
-        <Input type="password" placeholder="비밀번호" required />
-        <AccessButton onClick={handleLogin}>접속</AccessButton>
+      <Form onSubmit={handleLogin}>
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+        />
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
+        <AccessButton type="submit">Login</AccessButton>
       </Form>
       <Footer>© 2016 - 2022 BLIZZARD ENTERTAINMENT, INC. ALL RIGHTS RESERVED.</Footer>
     </Container>

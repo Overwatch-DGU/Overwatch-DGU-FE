@@ -1,9 +1,11 @@
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProfileCard from "../components/Profilecard";
 import { useCoin } from "../components/CoinContext"; // CoinContext에서 코인 사용하기
+import axios from "axios"; // axios import
 
+// 스타일 정의
 const Container = styled.div`
   height: 100vh;
   background-color: #92A1BB;
@@ -18,7 +20,7 @@ const ContentWrapper = styled.div`
   width: 90%;
   height: 70%;
   overflow: hidden;
-  padding-top:60px;
+  padding-top: 60px;
 `;
 
 const LeftPanel = styled.div`
@@ -47,7 +49,7 @@ const ShopTitle = styled.h2`
 const MainMenuItem = styled.div`
   font-weight: bold;
   padding: 10px;
-  background-color: #2A3149;  // 항상 고정된 배경색
+  background-color: #2A3149;
   cursor: pointer;
 `;
 
@@ -58,13 +60,8 @@ const SubMenuItem = styled.div`
   padding-left: 20px;
   font-size: 14px;
   border: ${({ isSelected }) => (isSelected ? "2px solid #3A6B97" : "none")};
-  background-color: ${({ isSelected }) => (isSelected ? "#435F80" : "transparent")};  // 선택된 메뉴의 배경색
+  background-color: ${({ isSelected }) => (isSelected ? "#435F80" : "transparent")};
   cursor: pointer;
-`;
-
-const LockIcon = styled.span`
-  font-size: 14px;
-  opacity: 0.7;
 `;
 
 const MiddlePanel = styled.div`
@@ -73,16 +70,14 @@ const MiddlePanel = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column; /* Add this to align the image and button vertically */
-
+  flex-direction: column;
   img {
     max-width: 100%;
     max-height: 80%;
     object-fit: cover;
   }
-
   button {
-    margin-top: 20px; /* Add spacing between image and button */
+    margin-top: 20px;
     padding: 10px 20px;
     background-color: orange;
     color: white;
@@ -90,7 +85,6 @@ const MiddlePanel = styled.div`
     border: none;
     cursor: pointer;
     transition: background-color 0.3s;
-
     &:hover {
       background-color: #2a4d6b;
     }
@@ -98,213 +92,114 @@ const MiddlePanel = styled.div`
 `;
 
 const Store = () => {
-  const { heroId } = useParams(); // URL에서 heroId 파라미터 가져오기
-  const [selectedSubMenu, setSelectedSubMenu] = useState([null, null]); // [mainIndex, subIndex]로 변경
-  const { coins, setCoins } = useCoin(); // CoinContext에서 코인 상태 가져오기
-  const [purchasedItems, setPurchasedItems] = useState({}); // 아이템별 구매 상태 저장
+  const { characterId } = useParams();
+  const [selectedSubMenu, setSelectedSubMenu] = useState([null, null]);
+  const { coins, setCoins } = useCoin();
+  const [heroData, setHeroData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // 캐릭터별 데이터 매핑
-  const [heroData, setHeroData] = useState({
-    0: [
-      {
-        id: 0,
-        name: "스킨",
-        items: [
-          {
-            id: 0,
-            name: "A-7000 워컷",
-            image: "/images/a7000.png",
-            description: "A-7000 워컷은 최고의 디자인으로 제작된 프리미엄 스킨입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-          {
-            id: 1,
-            name: "B-3000 클래식",
-            image: "/images/b3000.png",
-            description: "B-3000 클래식은 영웅적인 디자인을 자랑하는 스킨입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-      {
-        id: 1,
-        name: "승리 포즈",
-        items: [
-          {
-            id: 0,
-            name: "승리의 춤",
-            image: "/images/victory_dance.png",
-            description: "영웅이 승리 후 춤을 추는 포즈입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: "스프레이",
-        items: [
-          {
-            id: 0,
-            name: "다이아몬드",
-            image: "/images/spray_diamond.png",
-            description: "반짝이는 다이아몬드를 형상화한 스프레이입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-    ],
-    12: [
-      {
-        id: 0,
-        name: "스킨",
-        items: [
-          {
-            id: 0,
-            name: "가멜도",
-            image: "/images/gamelo.png",
-            description: "독특한 스타일의 스킨입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-      {
-        id: 1,
-        name: "승리 포즈",
-        items: [
-          {
-            id: 0,
-            name: "기계 손",
-            image: "/images/victory_pose1.png",
-            description: "기계 손을 들어 올리는 승리 포즈입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: "스프레이",
-        items: [
-          {
-            id: 0,
-            name: "가멜도다",
-            image: "/images/spray1.png",
-            description: "독특한 개성을 보여주는 스프레이입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-    ],
-    21: [
-      {
-        id: 0,
-        name: "스킨",
-        items: [
-          {
-            id: 0,
-            name: "엑스트라 슈퍼 스킨",
-            image: "/images/sigma1.png",
-            description: "강력한 외형의 스킨입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-      {
-        id: 1,
-        name: "승리 포즈",
-        items: [
-          {
-            id: 0,
-            name: "힘의 포즈",
-            image: "/images/victory_pose2.png",
-            description: "힘을 과시하는 포즈입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-      {
-        id: 2,
-        name: "스프레이",
-        items: [
-          {
-            id: 0,
-            name: "엑스트라 기어",
-            image: "/images/spray2.png",
-            description: "엑스트라 기어 모양의 스프레이입니다.",
-            price: 100, // 가격 고정
-            locked: true,
-          },
-        ],
-      },
-    ],
-  });
+  // 데이터 로드
+  useEffect(() => {
+    axios
+      .get(`http://localhost:8080/api/shop/characters/${characterId}?userId=1`)
+      .then((response) => {
+        setHeroData(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("API 요청 실패:", error);
+        setHeroData([]);
+        setLoading(false);
+      });
+  }, [characterId]);
 
-  const menuData = heroData[heroId] || []; // heroId에 맞는 데이터 가져오기
+  const handlePurchase = async (itemIndex, itemId, price) => {
+    if (coins >= price) {
+      try {
+        await axios.post(`http://localhost:8080/api/shop/buy`, {
+          userId: 1,
+          itemId: itemId,
+        });
 
-  const handleSubMenuClick = (mainIndex, subIndex) => {
-    setSelectedSubMenu([mainIndex, subIndex]); // 세부 메뉴 변경
-  };
+        setCoins(coins - price);
 
-  // 선택된 아이템 데이터
-  const selectedItem = menuData[selectedSubMenu[0]]?.items[selectedSubMenu[1]] || {};
+        setHeroData((prevHeroData) =>
+          prevHeroData.map((item, index) =>
+            index === itemIndex ? { ...item, owned: true } : item
+          )
+        );
 
-  const handlePurchase = (mainIndex, itemId, price) => {
-    const itemKey = `${mainIndex}-${itemId}`; // 고유한 아이템 키 생성
-    if (coins >= price && !purchasedItems[itemKey]) {
-      // 코인이 충분하고 해당 아이템이 아직 구매되지 않았다면
-      setCoins(coins - price); // 코인 차감
-      setPurchasedItems(prev => ({ ...prev, [itemKey]: true })); // 해당 아이템 구매 처리
-    // 구매 후 locked 값 변경
-    setHeroData(prevHeroData => {
-      const updatedHeroData = { ...prevHeroData };
-      updatedHeroData[heroId][mainIndex].items[itemId].locked = false; // 아이템 잠금 해제
-      return updatedHeroData;
-    });
+        alert("아이템이 성공적으로 구매되었습니다!");
+      } catch (error) {
+        console.error("구매 실패:", error);
+        alert("구매 중 문제가 발생했습니다. 다시 시도해주세요.");
+      }
+    } else {
+      alert("코인이 부족합니다!");
     }
   };
 
+  if (loading) return <div>로딩 중...</div>;
+  if (!heroData || heroData.length === 0) return <div>상점 데이터가 없습니다.</div>;
+
+  // type별로 그룹화
+  const groupedData = heroData.reduce((acc, item) => {
+    acc[item.type] = acc[item.type] || [];
+    acc[item.type].push(item);
+    return acc;
+  }, {});
+
+  const renderSubItems = (type, items) =>
+    items.map((item, index) => (
+      <SubMenuItem
+        key={item.itemId}
+        isSelected={selectedSubMenu[0] === type && selectedSubMenu[1] === index}
+        onClick={() => setSelectedSubMenu([type, index])}
+      >
+        <span>{item.name}</span>
+        <span>{item.owned ? "🔓" : `${item.price} 코인`}</span>
+      </SubMenuItem>
+    ));
+
   return (
     <Container>
-      <ShopTitle>상점</ShopTitle> {/* 화면 왼쪽 상단에 고정된 상점 제목 */}
-      <ProfileCard/>
+      <ShopTitle>상점</ShopTitle>
+      <ProfileCard />
       <ContentWrapper>
-        {/* 좌측 패널: 메뉴 */}
         <LeftPanel>
-          {menuData.map((mainItem, mainIndex) => (
-            <div key={mainItem.id}>
-              <MainMenuItem>{mainItem.name}</MainMenuItem>
-              {mainItem.items.map((subItem, subIndex) => (
-                <SubMenuItem
-                  key={subItem.id}
-                  isSelected={selectedSubMenu[0] === mainIndex && selectedSubMenu[1] === subIndex}
-                  onClick={() => handleSubMenuClick(mainIndex, subIndex)}
-                >
-                  <span>{subItem.name}</span>
-                  <span>{subItem.locked ? <LockIcon>🔒</LockIcon> : ""}</span>
-                </SubMenuItem>
-              ))}
+          {Object.entries(groupedData).map(([type, items]) => (
+            <div key={type}>
+              <MainMenuItem>{type}</MainMenuItem>
+              {renderSubItems(type, items)}
             </div>
           ))}
         </LeftPanel>
-
-        {/* 중앙 패널: 아이템 상세 */}
         <MiddlePanel>
-          {selectedItem.image && (
-            <>
-              <img src={selectedItem.image} alt={selectedItem.name} />
-              <button onClick={() => handlePurchase(selectedSubMenu[0], selectedSubMenu[1], selectedItem.price)}>
-                {purchasedItems[`${selectedSubMenu[0]}-${selectedSubMenu[1]}`] ? "소유중" : `구매 (${selectedItem.price} 코인)`}
-              </button>
-            </>
-          )}
+          {selectedSubMenu[0] !== null &&
+            selectedSubMenu[1] !== null &&
+            groupedData[selectedSubMenu[0]][selectedSubMenu[1]] && (
+              <>
+                <img
+                  src={
+                    groupedData[selectedSubMenu[0]][selectedSubMenu[1]].image
+                  }
+                  alt={groupedData[selectedSubMenu[0]][selectedSubMenu[1]].name}
+                />
+                {!groupedData[selectedSubMenu[0]][selectedSubMenu[1]].owned && (
+                  <button
+                    onClick={() =>
+                      handlePurchase(
+                        selectedSubMenu[1],
+                        groupedData[selectedSubMenu[0]][selectedSubMenu[1]].itemId,
+                        groupedData[selectedSubMenu[0]][selectedSubMenu[1]].price
+                      )
+                    }
+                  >
+                    구매하기
+                  </button>
+                )}
+              </>
+            )}
         </MiddlePanel>
       </ContentWrapper>
     </Container>

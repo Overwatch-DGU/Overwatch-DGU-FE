@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios";
 import ProfileCard from "../components/Profilecard";
 
 const Container = styled.div`
@@ -56,6 +57,7 @@ const TeamTitle = styled.div`
   background-color: none; /* 제목 배경 */
   text-align: left;
 `;
+
 const NumCard = styled.div`
   display: flex;
   align-items: center;
@@ -73,8 +75,8 @@ const NumDetail = styled.div`
   text-align: left;
 `;
 
-const Num =styled.div`
-`
+const Num = styled.div``;
+
 const GiftCard = styled.div`
   display: flex;
   align-items: center;
@@ -82,7 +84,7 @@ const GiftCard = styled.div`
   width: 100%;
   margin: 5px 0;
   padding: 10px;
-  padding-left:0px;
+  padding-left: 0px;
   background-color: white;
   color: black;
   font-size: 14px;
@@ -92,7 +94,7 @@ const GiftCard = styled.div`
 const IndicatorBox = styled.div`
   width: 5px; /* 얇은 박스 */
   height: 150%;
-  background-color: ${(props) => (props.type === "received" ? "#3377BE" : "#")};
+  background-color: ${(props) => (props.type === "received" ? "#3377BE" : "#FF5555")};
   margin-right: 10px; /* 박스와 내용 간의 간격 */
 `;
 
@@ -102,19 +104,36 @@ const GiftDetail = styled.div`
 `;
 
 const LogScreen = () => {
-  // 예시 데이터
-  const receivedGifts = [
-    { sender: "플레이어 A", item: "아이템 X", time: "2024-11-20 14:32" },
-    { sender: "플레이어 B", item: "아이템 Y", time: "2024-11-19 10:20" },
-  ];
+  const [receivedGifts, setReceivedGifts] = useState([]);
+  const [sentGifts, setSentGifts] = useState([]);
+  const [receivedCount, setReceivedCount] = useState(0);
+  const [sentCount, setSentCount] = useState(0);
 
-  const sentGifts = [
-    { receiver: "플레이어 C", item: "아이템 Z", time: "2024-11-18 16:45" },
-    { receiver: "플레이어 D", item: "아이템 W", time: "2024-11-18 12:00" },
-  ];
+  useEffect(() => {
+    // API 호출
+    axios.get("http://localhost:8080/api/logs/gifts?userId=1")
+      .then((response) => {
+        if (response.data && Array.isArray(response.data)) {
+          // 서버 응답 데이터를 확인
+          console.log("서버 응답 데이터:", response.data);
 
+          // 받은 선물과 준 선물 배열을 각각 추출
+          const received = response.data.filter(gift => gift.totalGiftsReceived > 0);
+          const sent = response.data.filter(gift => gift.totalGiftsSent > 0);
 
+          // 상태 업데이트
+          setReceivedGifts(received);
+          setSentGifts(sent);
 
+          // 총 받은 선물과 준 선물 횟수 계산
+          setReceivedCount(received.length);
+          setSentCount(sent.length);
+        }
+      })
+      .catch((error) => {
+        console.error("에러 발생:", error);
+      });
+  }, []);
 
   return (
     <Container>
@@ -122,28 +141,28 @@ const LogScreen = () => {
       <ProfileCard />
 
       <TeamSection>
-        {/*총횟수들*/}
-      <TeamColumn>
+        {/* 총횟수들 */}
+        <TeamColumn>
           <TeamTitle>주고 받은 횟수</TeamTitle>
-            <NumCard >
-              <NumDetail>받은 횟수</NumDetail>
-              <Num>3회</Num>
-            </NumCard>
-            <NumCard >
-              <NumDetail>준 횟수</NumDetail>
-              <Num>4회</Num>
-            </NumCard>
-         
+          <NumCard>
+            <NumDetail>받은 횟수</NumDetail>
+            <Num>{receivedCount}회</Num>
+          </NumCard>
+          <NumCard>
+            <NumDetail>준 횟수</NumDetail>
+            <Num>{sentCount}회</Num>
+          </NumCard>
         </TeamColumn>
+
         {/* 받은 선물 */}
         <TeamColumn>
           <TeamTitle>받은 선물</TeamTitle>
           {receivedGifts.map((gift, index) => (
             <GiftCard key={index}>
               <IndicatorBox type="received" />
-              <GiftDetail>{gift.sender}</GiftDetail>
-              <GiftDetail>{gift.item}</GiftDetail>
-              <GiftDetail>{gift.time}</GiftDetail>
+              <GiftDetail>{gift.userId}</GiftDetail>
+              <GiftDetail>{gift.totalGiftsReceived}</GiftDetail>
+              <GiftDetail>{gift.lastGiftDate}</GiftDetail>
             </GiftCard>
           ))}
         </TeamColumn>
@@ -154,9 +173,9 @@ const LogScreen = () => {
           {sentGifts.map((gift, index) => (
             <GiftCard key={index}>
               <IndicatorBox type="sent" />
-              <GiftDetail>{gift.receiver}</GiftDetail>
-              <GiftDetail>{gift.item}</GiftDetail>
-              <GiftDetail>{gift.time}</GiftDetail>
+              <GiftDetail>{gift.userId}</GiftDetail>
+              <GiftDetail>{gift.totalGiftsSent}</GiftDetail>
+              <GiftDetail>{gift.lastGiftDate}</GiftDetail>
             </GiftCard>
           ))}
         </TeamColumn>

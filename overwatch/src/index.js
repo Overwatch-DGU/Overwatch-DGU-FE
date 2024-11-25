@@ -19,8 +19,8 @@ root.render(
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/pick" element={<Pick />} />
-        <Route path="/store/:heroId" element={<Store />} />
-        <Route path="/gift/:heroId" element={<Gift />} />
+        <Route path="/store/:characterId" element={<Store />} />
+        <Route path="/gift/:characterId" element={<Gift />} />
         <Route path="/hero" element={<Hero />} />
         <Route path="/log" element={<Log/>}/>
       </Routes>

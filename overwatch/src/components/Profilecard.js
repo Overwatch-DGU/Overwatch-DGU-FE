@@ -51,13 +51,13 @@ const CoinImageStyled = styled.img`
 `;
 
 const ProfileCard = () => {
-  const { coins } = useCoin(); // 현재 코인 상태 가져오기
+  const { coins, username } = useCoin(); // 현재 코인과 사용자 이름 가져오기
 
   return (
     <Wrapper>
       <Card>
         <ProfileImage src={ProfilePic} alt="프로필 사진" />
-        <Username>사용자</Username>
+        <Username>{username}</Username> {/* username 표시 */}
       </Card>
       <CoinInfo>
         <CoinImageStyled src={CoinImage} alt="코인 사진" />
@@ -66,5 +66,6 @@ const ProfileCard = () => {
     </Wrapper>
   );
 };
+
 
 export default ProfileCard;
