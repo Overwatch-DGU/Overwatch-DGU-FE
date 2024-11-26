@@ -1,10 +1,11 @@
-// PickScreen.js (메인 화면)
 import React from "react";
 import styled from "styled-components";
 import BackgroundImage from "../assets/bg.png"; // 배경 이미지
 import TextLogo from "../assets/TextLogo.png";
 import ProfileCard from "../components/Profilecard"; // 분리된 컴포넌트 임포트
 import { useNavigate } from "react-router-dom";
+import { useCoin } from "../components/CoinContext"; // CoinContext import
+import axios from "axios";
 
 // Styled Components
 const Container = styled.div`
@@ -83,11 +84,46 @@ const Badge = styled.span`
   border-radius: 5px;
 `;
 
+// Logout Button Styled
+const LogoutButton = styled.button`
+  position: absolute;
+  bottom: 50px;
+  left: 20px;
+  padding: 10px;
+  font-size: 1rem;
+  background-color: orange;
+  color: white;
+  border: none;
+  cursor: pointer;
+  &:hover {
+    background-color: #cc7a00;
+  }
+`;
+
 const PickScreen = () => {
   const navigate = useNavigate(); // 페이지 이동을 위한 React Router 훅
+  const { setCoins, setUsername } = useCoin(); // Context 사용
 
   const handleNavigation = (path) => {
     navigate(path);
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Assuming the userId is stored in the context or somewhere in your app
+      const userId = 1; // Replace with dynamic userId if needed
+      await axios.post("http://localhost:8080/api/users/logout", { userId });
+
+      // Clear the coins and username in context after successful logout
+      setCoins(0);
+      setUsername('');
+
+      // Redirect to login page after logout
+      navigate('/');
+    } catch (error) {
+      console.error("로그아웃 실패:", error.response ? error.response.data : error.message);
+      alert("로그아웃 실패. 다시 시도해주세요.");
+    }
   };
 
   return (
@@ -110,6 +146,9 @@ const PickScreen = () => {
           선물하기
         </MenuItem>
       </MenuList>
+
+      {/* Logout Button */}
+      <LogoutButton onClick={handleLogout}>로그아웃</LogoutButton>
     </Container>
   );
 };

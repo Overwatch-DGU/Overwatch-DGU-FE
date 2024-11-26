@@ -20,17 +20,18 @@ const Container = styled.div`
 `;
 
 const TopLeftText = styled.div`
-  position: absolute;
-  top: 40px;
-  left: 20px;
-  font-size: 70px;
-  font-weight: bold;
-  color: transparent;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  padding: 10px 20px;
-  font-family: GowunDodum-Regular;
+position: absolute;
+font-style: italic;
+top: 40px;
+left: 20px;
+font-size: 70px;
+font-weight: bold;
+color: transparent;
+background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
+background-clip: text;
+-webkit-background-clip: text; /* For Safari */
+padding: 10px 20px;
+font-family: GowunDodum-Regular;
 `;
 
 const ButtonWrapper = styled.div`
@@ -80,13 +81,13 @@ const CharacterCard = styled.div`
 `;
 
 const CharacterImage = styled.div`
-  width: 140%;
-  height: 100%;
+
+  height: 200%;
   background-position: bottom;
   background-repeat: no-repeat;
   background-image: ${({ url }) => `url(${url})`};
   background-size: cover;
-  transform: skewX(14deg) translateX(-16px);
+  transform: skewX(14deg) translateX(80px);
 `;
 
 const CharacterName = styled.div`

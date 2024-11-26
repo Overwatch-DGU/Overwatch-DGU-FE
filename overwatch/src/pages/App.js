@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import axios from 'axios';
-import OWLogo from '../assets/Logo.png';
-import { useNavigate } from 'react-router-dom';
-import { useCoin } from '../components/CoinContext'; // CoinContext import
+import React, { useState } from "react";
+import styled from "styled-components";
+import axios from "axios";
+import OWLogo from "../assets/Logo.png";
+import { useNavigate } from "react-router-dom";
+import { useCoin } from "../components/CoinContext"; // CoinContext import
 
-// Styled Components (기존 코드 유지)
+// Styled Components 유지
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -13,7 +13,7 @@ const Container = styled.div`
   justify-content: center;
   height: 100vh;
   background-color: #92A1BB;
-  font-family: 'Arial', sans-serif;
+  font-family: "Arial", sans-serif;
   position: relative;
 `;
 
@@ -65,30 +65,33 @@ const Footer = styled.div`
 `;
 
 const OverwatchScreen = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { setCoins, setUsername } = useCoin(); // setUsername 가져오기
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const { setCoins, setUsername, setUserId } = useCoin(); // setUserId 추가
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/users/login', {
+      const response = await axios.post("http://localhost:8080/api/users/login", {
         email,
         password,
       });
-      console.log('로그인 성공:', response.data);
 
-      // 응답에서 username과 coin 값을 추출하고 CoinContext에 설정
-      const userCoins = response.data.coin;
-      const userUsername = response.data.username; // 응답에서 username 값 추출
-      setCoins(userCoins); // CoinContext의 coins 상태 업데이트
-      setUsername(userUsername); // CoinContext의 username 상태 업데이트
+      console.log("로그인 성공:", response.data);
 
-      navigate('/pick');
+      // 응답에서 username, coin, userId 값을 설정
+      setCoins(response.data.coin);
+      setUsername(response.data.username);
+      setUserId(response.data.userId); // userId 저장
+
+      navigate("/pick");
     } catch (error) {
-      console.error('로그인 실패:', error.response ? error.response.data : error.message);
-      alert('로그인 실패. 다시 시도해주세요.');
+      console.error(
+        "로그인 실패:",
+        error.response ? error.response.data : error.message
+      );
+      alert("로그인 실패. 다시 시도해주세요.");
     }
   };
 

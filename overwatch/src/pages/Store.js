@@ -1,14 +1,14 @@
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
-import { useState, useEffect } from "react";
+import { useCoin } from "../components/CoinContext";
+import axios from "axios";
 import ProfileCard from "../components/Profilecard";
-import { useCoin } from "../components/CoinContext"; // CoinContext에서 코인 사용하기
-import axios from "axios"; // axios import
 
 // 스타일 정의
 const Container = styled.div`
   height: 100vh;
-  background-color: #92A1BB;
+  background-color: #92a1bb;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -18,14 +18,14 @@ const Container = styled.div`
 const ContentWrapper = styled.div`
   display: flex;
   width: 90%;
-  height: 70%;
+  height: 73%;
   overflow: hidden;
   padding-top: 60px;
 `;
 
 const LeftPanel = styled.div`
   width: 35%;
-  background-color: #4A5768;
+  background-color: #4a5768;
   display: flex;
   flex-direction: column;
   color: #ffffff;
@@ -41,7 +41,7 @@ const ShopTitle = styled.h2`
   color: transparent;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
   background-clip: text;
-  -webkit-background-clip: text; /* For Safari */
+  -webkit-background-clip: text;
   padding: 10px 20px;
   font-family: GowunDodum-Regular;
 `;
@@ -49,7 +49,7 @@ const ShopTitle = styled.h2`
 const MainMenuItem = styled.div`
   font-weight: bold;
   padding: 10px;
-  background-color: #2A3149;
+  background-color: #2a3149;
   cursor: pointer;
 `;
 
@@ -59,23 +59,26 @@ const SubMenuItem = styled.div`
   padding: 10px;
   padding-left: 20px;
   font-size: 14px;
-  border: ${({ isSelected }) => (isSelected ? "2px solid #3A6B97" : "none")};
-  background-color: ${({ isSelected }) => (isSelected ? "#435F80" : "transparent")};
+  border: ${({ isSelected }) => (isSelected ? "2px solid #3a6b97" : "none")};
+  background-color: ${({ isSelected }) => (isSelected ? "#435f80" : "transparent")};
   cursor: pointer;
 `;
 
 const MiddlePanel = styled.div`
   width: 50%;
-  background-color: #92A1BB;
+  background-color: white;
+  margin-left: 100px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   img {
     max-width: 100%;
     max-height: 80%;
     object-fit: cover;
   }
+
   button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -85,6 +88,7 @@ const MiddlePanel = styled.div`
     border: none;
     cursor: pointer;
     transition: background-color 0.3s;
+
     &:hover {
       background-color: #2a4d6b;
     }
@@ -92,37 +96,50 @@ const MiddlePanel = styled.div`
 `;
 
 const Store = () => {
-  const { characterId } = useParams();
+  const { characterId } = useParams(); // URL 파라미터에서 characterId 가져오기
+  const { coins, setCoins, userId } = useCoin(); // CoinContext에서 coins와 userId 가져오기
   const [selectedSubMenu, setSelectedSubMenu] = useState([null, null]);
-  const { coins, setCoins } = useCoin();
   const [heroData, setHeroData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // 데이터 로드
   useEffect(() => {
+    if (!userId) {
+      console.warn("로그인되지 않았습니다.");
+      return;
+    }
+
+    setLoading(true);
     axios
-      .get(`http://localhost:8080/api/shop/characters/${characterId}?userId=1`)
+      .get(`http://localhost:8080/api/shop/characters/${characterId}?userId=${userId}`)
       .then((response) => {
         setHeroData(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("API 요청 실패:", error);
+        console.error("데이터 로드 실패:", error);
         setHeroData([]);
         setLoading(false);
       });
-  }, [characterId]);
+  }, [characterId, userId]);
 
+  // 아이템 구매 처리
   const handlePurchase = async (itemIndex, itemId, price) => {
+    if (!userId) {
+      alert("로그인이 필요합니다!");
+      return;
+    }
+
     if (coins >= price) {
       try {
-        await axios.post(`http://localhost:8080/api/shop/buy`, {
-          userId: 1,
-          itemId: itemId,
+        const response = await axios.post("http://localhost:8080/api/shop/buy", {
+          userId, // 동적으로 userId 사용
+          itemId,
         });
 
-        setCoins(coins - price);
+        setCoins(response.data.remainingCoins); // 남은 코인 업데이트
 
+        // 구매한 아이템을 소유 상태로 변경
         setHeroData((prevHeroData) =>
           prevHeroData.map((item, index) =>
             index === itemIndex ? { ...item, owned: true } : item
@@ -139,6 +156,7 @@ const Store = () => {
     }
   };
 
+  // 로딩 상태 표시
   if (loading) return <div>로딩 중...</div>;
   if (!heroData || heroData.length === 0) return <div>상점 데이터가 없습니다.</div>;
 
@@ -163,7 +181,7 @@ const Store = () => {
 
   return (
     <Container>
-      <ShopTitle>상점</ShopTitle>
+      <ShopTitle>상 점</ShopTitle>
       <ProfileCard />
       <ContentWrapper>
         <LeftPanel>
@@ -180,9 +198,7 @@ const Store = () => {
             groupedData[selectedSubMenu[0]][selectedSubMenu[1]] && (
               <>
                 <img
-                  src={
-                    groupedData[selectedSubMenu[0]][selectedSubMenu[1]].image
-                  }
+                  src={groupedData[selectedSubMenu[0]][selectedSubMenu[1]].image}
                   alt={groupedData[selectedSubMenu[0]][selectedSubMenu[1]].name}
                 />
                 {!groupedData[selectedSubMenu[0]][selectedSubMenu[1]].owned && (

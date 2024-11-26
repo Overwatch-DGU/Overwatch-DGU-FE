@@ -17,7 +17,7 @@ const Container = styled.div`
 const ContentWrapper = styled.div`
   display: flex;
   width: 90%;
-  height: 70%;
+  height: 73%;
   overflow: hidden;
   padding-top: 60px;
 `;
@@ -70,12 +70,14 @@ const LockIcon = styled.span`
 
 const MiddlePanel = styled.div`
   width: 50%;
-  background-color: #92A1BB;
+  margin-left:100px;
+  background-color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   img {
+    background-color: transparent;
     max-width: 100%;
     max-height: 80%;
     object-fit: cover;
@@ -165,12 +167,10 @@ const Popupbutton = styled.button`
   &:focus {
     outline: none;
   }
-`;
-
-const Gift = () => {
+`;const Gift = () => {
   const { characterId } = useParams(); // URL에서 characterId 파라미터 가져오기
-  const [selectedSubMenu, setSelectedSubMenu] = useState([null, null]);
-  const { coins, setCoins } = useCoin(); // CoinContext에서 코인 상태 가져오기
+  const [selectedSubMenu, setSelectedSubMenu] = useState([null, null]); // 선택된 서브 메뉴 상태
+  const { coins, setCoins, userId } = useCoin(); // CoinContext에서 코인 및 userId 가져오기
   const [showPopup, setShowPopup] = useState(false);
   const [selectedUser, setSelectedUser] = useState("");
   const [heroData, setHeroData] = useState([]);
@@ -207,7 +207,7 @@ const Gift = () => {
   };
 
   const handleSubMenuClick = (mainType, subIndex) => {
-    setSelectedSubMenu([mainType, subIndex]);
+    setSelectedSubMenu([mainType, subIndex]); // 서브 메뉴 선택 시 상태 업데이트
   };
 
   const handleGift = (mainType, itemId, price) => {
@@ -239,8 +239,8 @@ const Gift = () => {
 
     try {
       const requestBody = {
-        senderId: 1,
-        receiverId: parseInt(selectedUser),
+        senderId: userId, // userId를 senderId로 설정
+        receiverId: parseInt(selectedUser), // receiverId는 여전히 사용자가 입력한 값
         itemId: selectedItem.itemId,
       };
 
@@ -258,7 +258,7 @@ const Gift = () => {
       }
     } catch (error) {
       console.error("선물하기 API 요청 실패:", error);
-      alert("선물하기 중 오류가 발생했습니다.");
+      alert("이미 보유한 아이템입니다.");
     }
   };
 
@@ -294,20 +294,23 @@ const Gift = () => {
         </LeftPanel>
         <MiddlePanel>
           <img
-            src={selectedItem.image || "https://via.placeholder.com/200x200"}
+            src={selectedItem.image}
             alt={selectedItem.name}
           />
-          <button
-            onClick={() =>
-              handleGift(
-                selectedSubMenu[0],
-                selectedItem.itemId,
-                selectedItem.price
-              )
-            }
-          >
-             선물하기
-          </button>
+          {/* 선물하기 버튼은 아이템이 선택될 때만 보이도록 설정 */}
+          {selectedSubMenu[0] !== null && selectedSubMenu[1] !== null && (
+            <button
+              onClick={() =>
+                handleGift(
+                  selectedSubMenu[0],
+                  selectedItem.itemId,
+                  selectedItem.price
+                )
+              }
+            >
+              선물하기
+            </button>
+          )}
         </MiddlePanel>
       </ContentWrapper>
       {showPopup && (

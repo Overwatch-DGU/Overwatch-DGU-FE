@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import ProfileCard from "../components/Profilecard";
+import { useCoin } from "../components/CoinContext";  // CoinContext에서 userId 가져오기
 
 const Container = styled.div`
   height: 100vh;
@@ -27,7 +28,7 @@ const LogTitle = styled.h2`
   color: transparent;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 100%);
   background-clip: text;
-  -webkit-background-clip: text; /* For Safari */
+  -webkit-background-clip: text;
   padding: 10px 20px;
   font-family: GowunDodum-Regular;
 `;
@@ -42,20 +43,17 @@ const TeamSection = styled.div`
 const TeamColumn = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* 왼쪽 정렬 */
+  align-items: flex-start;
   width: 40%;
   padding: 20px;
 `;
 
 const TeamTitle = styled.div`
-  width: 35%;
-  font-size: 15px;
+  width: 100%;
+  font-size: 18px;
   font-weight: bold;
   color: black;
   margin-bottom: 10px;
-  padding: 0px;
-  background-color: none; /* 제목 배경 */
-  text-align: left;
 `;
 
 const NumCard = styled.div`
@@ -70,13 +68,6 @@ const NumCard = styled.div`
   font-size: 14px;
 `;
 
-const NumDetail = styled.div`
-  flex: 1;
-  text-align: left;
-`;
-
-const Num = styled.div``;
-
 const GiftCard = styled.div`
   display: flex;
   align-items: center;
@@ -84,48 +75,45 @@ const GiftCard = styled.div`
   width: 100%;
   margin: 5px 0;
   padding: 10px;
-  padding-left: 0px;
   background-color: white;
   color: black;
   font-size: 14px;
-  position: relative; /* 박스 위치를 위해 */
+  position: relative;
 `;
 
 const IndicatorBox = styled.div`
-  width: 5px; /* 얇은 박스 */
-  height: 150%;
+  width: 5px;
+  height: 100%;
   background-color: ${(props) => (props.type === "received" ? "#3377BE" : "#FF5555")};
-  margin-right: 10px; /* 박스와 내용 간의 간격 */
+  margin-right: 10px;
 `;
 
 const GiftDetail = styled.div`
   flex: 1;
-  text-align: center;
+  text-align: left;
 `;
 
 const LogScreen = () => {
+  const { userId } = useCoin(); // CoinContext에서 현재 userId 가져오기
   const [receivedGifts, setReceivedGifts] = useState([]);
   const [sentGifts, setSentGifts] = useState([]);
   const [receivedCount, setReceivedCount] = useState(0);
   const [sentCount, setSentCount] = useState(0);
 
   useEffect(() => {
-    // API 호출
-    axios.get("http://localhost:8080/api/logs/gifts?userId=1")
+    if (!userId) return; // userId가 없으면 API 요청을 하지 않도록 처리
+
+    axios
+      .get(`http://localhost:8080/api/logs/gifts?userId=${userId}`)
       .then((response) => {
         if (response.data && Array.isArray(response.data)) {
-          // 서버 응답 데이터를 확인
           console.log("서버 응답 데이터:", response.data);
 
-          // 받은 선물과 준 선물 배열을 각각 추출
-          const received = response.data.filter(gift => gift.totalGiftsReceived > 0);
-          const sent = response.data.filter(gift => gift.totalGiftsSent > 0);
+          const received = response.data.filter((gift) => gift.receiverId === userId);
+          const sent = response.data.filter((gift) => gift.senderId === userId);
 
-          // 상태 업데이트
           setReceivedGifts(received);
           setSentGifts(sent);
-
-          // 총 받은 선물과 준 선물 횟수 계산
           setReceivedCount(received.length);
           setSentCount(sent.length);
         }
@@ -133,7 +121,15 @@ const LogScreen = () => {
       .catch((error) => {
         console.error("에러 발생:", error);
       });
-  }, []);
+  }, [userId]);
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   return (
     <Container>
@@ -141,28 +137,28 @@ const LogScreen = () => {
       <ProfileCard />
 
       <TeamSection>
-        {/* 총횟수들 */}
+        {/* 총 횟수 */}
         <TeamColumn>
           <TeamTitle>주고 받은 횟수</TeamTitle>
           <NumCard>
-            <NumDetail>받은 횟수</NumDetail>
-            <Num>{receivedCount}회</Num>
+            <GiftDetail>받은 횟수</GiftDetail>
+            <GiftDetail>{receivedCount}회</GiftDetail>
           </NumCard>
           <NumCard>
-            <NumDetail>준 횟수</NumDetail>
-            <Num>{sentCount}회</Num>
+            <GiftDetail>준 횟수</GiftDetail>
+            <GiftDetail>{sentCount}회</GiftDetail>
           </NumCard>
         </TeamColumn>
 
         {/* 받은 선물 */}
         <TeamColumn>
           <TeamTitle>받은 선물</TeamTitle>
-          {receivedGifts.map((gift, index) => (
-            <GiftCard key={index}>
+          {receivedGifts.map((gift) => (
+            <GiftCard key={gift.giftId}>
               <IndicatorBox type="received" />
-              <GiftDetail>{gift.userId}</GiftDetail>
-              <GiftDetail>{gift.totalGiftsReceived}</GiftDetail>
-              <GiftDetail>{gift.lastGiftDate}</GiftDetail>
+              <GiftDetail>보낸 사람: {gift.senderName}</GiftDetail>
+              <GiftDetail>아이템: {gift.itemName}</GiftDetail>
+              <GiftDetail>날짜: {formatDate(gift.giftedAt)}</GiftDetail>
             </GiftCard>
           ))}
         </TeamColumn>
@@ -170,12 +166,12 @@ const LogScreen = () => {
         {/* 준 선물 */}
         <TeamColumn>
           <TeamTitle>준 선물</TeamTitle>
-          {sentGifts.map((gift, index) => (
-            <GiftCard key={index}>
+          {sentGifts.map((gift) => (
+            <GiftCard key={gift.giftId}>
               <IndicatorBox type="sent" />
-              <GiftDetail>{gift.userId}</GiftDetail>
-              <GiftDetail>{gift.totalGiftsSent}</GiftDetail>
-              <GiftDetail>{gift.lastGiftDate}</GiftDetail>
+              <GiftDetail>받은 사람: {gift.receiverName}</GiftDetail>
+              <GiftDetail>아이템: {gift.itemName}</GiftDetail>
+              <GiftDetail>날짜: {formatDate(gift.giftedAt)}</GiftDetail>
             </GiftCard>
           ))}
         </TeamColumn>
