@@ -217,51 +217,56 @@ const Popupbutton = styled.button`
       alert("코인이 부족합니다!");
     }
   };
-
   const handleConfirmGift = async () => {
+    // 이메일이 비어 있는지 확인
     if (selectedUser.trim() === "") {
-      alert("선물할 사용자를 입력하세요.");
+      alert("선물할 이메일을 입력하세요.");
       return;
     }
-
+  
+    // 선택된 아이템 확인
     const selectedItem =
       groupedHeroData[selectedSubMenu[0]]?.[selectedSubMenu[1]];
-
+  
     if (!selectedItem) {
       alert("아이템을 선택해주세요.");
       return;
     }
-
-    if (isNaN(selectedUser)) {
-      alert("유효한 사용자 ID를 입력하세요.");
+  
+    // 이메일 형식 검증 (간단한 예시)
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(selectedUser)) {
+      alert("유효한 이메일 주소를 입력하세요.");
       return;
     }
-
+  
     try {
+      // API 요청 본문 수정: receiverId 대신 receiverEmail 사용
       const requestBody = {
-        senderId: userId, // userId를 senderId로 설정
-        receiverId: parseInt(selectedUser), // receiverId는 여전히 사용자가 입력한 값
+        senderId: userId, // senderId는 여전히 userId로 설정
+        receiverEmail: selectedUser.trim(), // receiverEmail은 입력된 이메일로 설정
         itemId: selectedItem.itemId,
       };
-
+  
+      // 선물 API 호출
       const response = await axios.post(
         "http://localhost:8080/api/gifts/send",
         requestBody
       );
-
+  
       if (response.data.message === "Gift sent successfully") {
-        setCoins(response.data.remainingCoins);
+        setCoins(response.data.remainingCoins); // 남은 코인 업데이트
         alert("선물이 성공적으로 완료되었습니다!");
-        setShowPopup(false);
+        setShowPopup(false); // 팝업 닫기
       } else {
-        alert(response.data.message);
+        alert(response.data.message); // 에러 메시지 표시
       }
     } catch (error) {
       console.error("선물하기 API 요청 실패:", error);
-      alert("이미 보유한 아이템입니다.");
+      alert("선물 전송에 실패했습니다.");
     }
   };
-
+  
   if (loading) return <div>로딩 중...</div>;
   if (!heroData || heroData.length === 0) return <div>상점 데이터가 없습니다.</div>;
 
@@ -316,11 +321,11 @@ const Popupbutton = styled.button`
       {showPopup && (
         <Overlay>
           <Popup>
-            <PopupTitle>선물할 사용자 ID 입력</PopupTitle>
+            <PopupTitle>선물할 사용자 이메일 입력</PopupTitle>
             <PopupInput
               value={selectedUser}
               onChange={(e) => setSelectedUser(e.target.value)}
-              placeholder="사용자 ID 입력"
+              placeholder="사용자 이메일 입력"
             />
             <Popupdiv>
               <Popupbutton onClick={() => setShowPopup(false)}>취소</Popupbutton>
